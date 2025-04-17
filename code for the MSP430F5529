@@ -1,0 +1,173 @@
+#include <msp430.h>
+
+void displayDigit(int num);
+void showNumber(int number);
+void retraso(unsigned int x);
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
+
+    // Pines de segmentos
+    P4DIR |= BIT1 | BIT2;       // A, B
+    P2DIR |= BIT7;              // C
+    P3DIR |= BIT2 | BIT3;       // D, G
+    P6DIR |= BIT6;              // E
+    P1DIR |= BIT6;              // F
+
+    // Pines de control de los 4 dígitos (usa transistores PNP: 2N2907)
+    P6DIR |= 0x0F;              // P6.0 a P6.3 como salida
+
+    int num = 0;
+
+    while (1)
+    {
+        int i;
+        for (i = 0; i < 100; i++)  // Refrescar varias veces el número para que se vea estable
+        {
+            showNumber(num);
+        }
+
+        num = (num + 1) % 10000;  // Contar del 0 al 9999
+        retraso(10);
+    }
+}
+
+void showNumber(int number)
+{
+    int digits[4];
+    int i;
+
+    digits[0] = (number / 1000) % 10; // millar
+    digits[1] = (number / 100) % 10;  // centena
+    digits[2] = (number / 10) % 10;   // decena
+    digits[3] = number % 10;         // unidad
+
+    for (i = 0; i < 4; i++)
+    {
+        // 1. Apagar todos los dígitos (P6.0–P6.3 HIGH = apagado para PNP)
+        P6OUT |= 0x0F;
+
+        // 2. Mostrar el dígito i en los segmentos
+        displayDigit(digits[i]);
+
+        // 3. Encender SOLO el dígito actual
+        P6OUT &= ~(1 << i);  // Activar ese transistor
+
+        // 4. Esperar un poquito
+        retraso(10);
+
+        // 5. Apagar el dígito actual
+        //P6OUT |= (1 << i);
+    }
+}
+
+
+void displayDigit(int num)
+{
+    // Apagar todos los segmentos (HIGH para apagarlos, porque display es cátodo común)
+    P4OUT |= BIT1 | BIT2;
+    P2OUT |= BIT7;
+    P3OUT |= BIT2 | BIT3;
+    P6OUT |= BIT6;
+    P1OUT |= BIT6;
+
+    switch (num)
+    {
+        case 0:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            break;
+        case 1:
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            break;
+        case 2:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 3:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P3OUT &= ~BIT3;
+            break;
+        case 4:
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 5:
+            P4OUT &= ~BIT1;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 6:
+            P4OUT &= ~BIT1;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 7:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            break;
+        case 8:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 9:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 10:
+
+            P4OUT |= BIT1 | BIT2;
+            P2OUT |= BIT7;
+            P3OUT |= BIT2 | BIT3;
+            P6OUT |= BIT6;
+            P1OUT |= BIT6;
+            break;
+
+    }
+
+}
+
+void retraso(unsigned int x)
+{
+    volatile unsigned int y=0;
+    volatile unsigned int b=0;
+
+
+
+    for(y=0;y<x;y++)
+    {
+        for(b=0;b<x;b++)
+            {
+
+            }
+    }
+
+}
