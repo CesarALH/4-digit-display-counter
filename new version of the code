@@ -1,0 +1,204 @@
+#include <msp430.h>
+
+void displayDigit(int num);
+void showNumber(int number);
+void retraso(unsigned int x);
+
+int main(void)
+{
+    WDTCTL = WDTPW | WDTHOLD;
+
+    // Pines de segmentos
+    P4DIR |= BIT1 | BIT2;
+    P2DIR |= BIT7;
+    P3DIR |= BIT2 | BIT3;
+    P6DIR |= BIT6;
+    P1DIR |= BIT6;
+
+    // Pines de control de los 4 dígitos con transistores PNP
+    P6DIR |= BIT4;      // P6.4
+    P7DIR |= BIT0;      // P7.0
+    P3DIR |= BIT6 | BIT5; // P3.6 y P3.5
+
+    // Inicialmente apagamos todos los dígitos
+    P6OUT |= BIT4;
+    P7OUT |= BIT0;
+    P3OUT |= BIT6 | BIT5;
+
+
+    P2REN |= BIT1;   // resistor de pull-up/down
+    P2OUT |= BIT1;   // pull-up
+
+
+    P1REN |= BIT1;
+    P1OUT |= BIT1;
+
+    int i=0;
+    int num = 0;
+    int velocidad=10;
+
+    while (1)
+    {
+
+
+        for (i = 0; i < velocidad; i++)
+        {
+            showNumber(num);
+        }
+
+
+
+        if (!(P2IN & BIT1)){
+           velocidad++;
+           __delay_cycles(10000);
+
+           }
+
+        if(!(P1IN & BIT1)){
+            velocidad--;
+            __delay_cycles(10000);
+
+        }
+
+        if (velocidad < 5) velocidad = 5;
+        if (velocidad > 1000) velocidad = 1000;
+        num = (num + 1) % 10000;
+        retraso(5);
+    }
+}
+
+void apagarDigitos()
+{
+    P6OUT |= BIT4;
+    P7OUT |= BIT0;
+    P3OUT |= BIT6 | BIT5;
+}
+
+void encenderDigito(int i)
+{
+    switch(i)
+    {
+        case 0:
+            P6OUT &= ~BIT4; // Activar P6.4
+            break;
+        case 1:
+            P7OUT &= ~BIT0; // Activar P7.0
+            break;
+        case 2:
+            P3OUT &= ~BIT6; // Activar P3.6
+            break;
+        case 3:
+            P3OUT &= ~BIT5; // Activar P3.5
+            break;
+    }
+}
+
+void showNumber(int number)
+{
+    int digits[4];
+
+    digits[0] = (number / 1000) % 10;
+    digits[1] = (number / 100) % 10;
+    digits[2] = (number / 10) % 10;
+    digits[3] = number % 10;
+int i;
+    for ( i = 0; i < 4; i++)
+    {
+        apagarDigitos();
+        displayDigit(digits[i]);
+        encenderDigito(i);
+        retraso(10);
+    }
+}
+
+void displayDigit(int num)
+{
+    P4OUT |= BIT1 | BIT2;
+    P2OUT |= BIT7;
+    P3OUT |= BIT2 | BIT3;
+    P6OUT |= BIT6;
+    P1OUT |= BIT6;
+
+    switch (num)
+    {
+        case 0:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            break;
+        case 1:
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            break;
+        case 2:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 3:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P3OUT &= ~BIT3;
+            break;
+        case 4:
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 5:
+            P4OUT &= ~BIT1;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 6:
+            P4OUT &= ~BIT1;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 7:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            break;
+        case 8:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P3OUT &= ~BIT2;
+            P6OUT &= ~BIT6;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+        case 9:
+            P4OUT &= ~BIT1;
+            P4OUT &= ~BIT2;
+            P2OUT &= ~BIT7;
+            P1OUT &= ~BIT6;
+            P3OUT &= ~BIT3;
+            break;
+    }
+}
+
+void retraso(unsigned int x)
+{
+    volatile unsigned int y=0;
+    volatile unsigned int b=0;
+
+    for(y=0;y<x;y++)
+    {
+        for(b=0;b<x;b++) { }
+    }
+}
